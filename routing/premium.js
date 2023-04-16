@@ -18,27 +18,30 @@ router.get('/add', (req, res) => {
 });
 
 router.post('/add', async (req, res) => {
-    let { username, expired, customKey, token } = req.body;
+    let { username, token } = req.body;
     if (token != tokens) {
         req.flash('error_msg', 'Invalid Token');
-        return res.redirect('/premium/add');
+        return res.redirect('/premium/delete');
     }
     let checking = await checkUsername(username);
     if (!checking) {
         req.flash('error_msg', 'Username is not registered');
-        return res.redirect('/premium/add');
+        return res.redirect('/premium/delete');
     } else {
-        let checkPrem = await checkPremium(username)
-        if (checkPrem) {
-            req.flash('error_msg', 'Username is alredy Premium before');
-            return res.redirect('/premium/add');
-        } else {
-            addPremium(username, customKey, expired)
-            req.flash('success_msg', `Succes Added Premium ${username}`);
+        let checkPremn = await checkPremium(username)
+        if (checkPremm) {
+            addPremium(username);
+            req.flash('success_msg', `Succes add Premium ${username}`);
             return res.redirect('/premium');
+        } else {
+            req.flash('error_msg', 'Username is Premium');
+            return res.redirect('/premium/add');
         }
-    }
-})
+    };
+});
+
+
+
 
 router.get('/delete', (req, res) => {
     res.render('premium/delete',  {
