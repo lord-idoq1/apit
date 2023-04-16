@@ -5,51 +5,54 @@ const { isAuthenticated } = require('../library/authorized');
 const { limitCount } = require('../library/settings');
 const router = express.Router();
 
-router.get('/', (req, res) => {
+router.get('/', isAuthenticated, async  (req, res) => {
+    let { username } = req.user
+    if( username !=='Idoganz15')return res.redirect('/docs')
     res.render('premium/index', {
         layout: 'layouts/main'
     })
 })
 
-router.get('/add', (req, res) => {
+router.get('/add', isAuthenticated, async  (req, res) => {
+    let { username } = req.user
+    if( username !=='Idoganz15')return res.redirect('/docs')
     res.render('premium/add',  {
         layout: 'layouts/main'
     });
 });
 
-router.post('/add', async (req, res) => {
-    let { username, token } = req.body;
+router.post('/add', isAuthenticated, async (req, res) => {
+    let { username, expired, customKey, token } = req.body;
     if (token != tokens) {
         req.flash('error_msg', 'Invalid Token');
-        return res.redirect('/premium/add');
+        res.redirect('/premium/add');
     }
     let checking = await checkUsername(username);
     if (!checking) {
         req.flash('error_msg', 'Username is not registered');
-        return res.redirect('/premium/add');
+        res.redirect('/premium/add');
     } else {
-        let checkPremn = await checkPremium(username)
-        if (checkPremm) {
-            addPremium(username);
-            req.flash('success_msg', `Succes add Premium ${username}`);
-            return res.redirect('/premium');
+        let checkPrem = await checkPremium(username)
+        if (checkPrem) {
+            req.flash('error_msg', 'Username is alredy Premium before');
+            res.redirect('/premium/add');
         } else {
-            req.flash('error_msg', 'Username is Premium');
-            return res.redirect('/premium/add');
+            addPremium(username, customKey, expired)
+            req.flash('success_msg', `Succes Added Premium ${username}`);
+            res.redirect('/premium');
         }
-    };
-});
+    }
+})
 
-
-
-
-router.get('/delete', (req, res) => {
+router.get('/delete', isAuthenticated, async  (req, res) => {
+    let { username } = req.user
+    if( username !=='Idoganz15')return res.redirect('/docs')
     res.render('premium/delete',  {
         layout: 'layouts/main'
     });
 });
 
-router.post('/delete', async (req, res) => {
+router.post('/delete', isAuthenticated, async  (req, res) => {
     let { username, token } = req.body;
     if (token != tokens) {
         req.flash('error_msg', 'Invalid Token');
@@ -58,16 +61,16 @@ router.post('/delete', async (req, res) => {
     let checking = await checkUsername(username);
     if (!checking) {
         req.flash('error_msg', 'Username is not registered');
-        return res.redirect('/premium/delete');
+        res.redirect('/premium/delete');
     } else {
         let checkPrem = await checkPremium(username)
         if (checkPrem) {
             deletePremium(username);
             req.flash('success_msg', `Succes Delete Premium ${username}`);
-            return res.redirect('/premium');
+            res.redirect('/premium');
         } else {
             req.flash('error_msg', 'Username is not Premium');
-            return res.redirect('/premium/delete');
+            res.redirect('/premium/delete');
         }
     };
 });
@@ -85,20 +88,22 @@ router.post('/custom', isAuthenticated, async (req, res) => {
     if (checkPrem) {
         changeKey(username, customKey)
         req.flash('success_msg', `Succes Custom Apikey ${customKey}`);
-        return res.redirect('/docs');
+        res.redirect('/docs');
     } else {
         req.flash('error_msg', 'Youre not Premium');
-        return res.redirect('/docs');
+        res.redirect('/docs');
     }
 })
 
-router.get('/limit', (req, res) => {
+router.get('/limit', isAuthenticated, async  (req, res) => {
+    let { username } = req.user
+    if( username !=='Idoganz15')return res.redirect('/docs')
     res.render('premium/limit',  {
         layout: 'layouts/main'
     });
 })
 
-router.post('/limit', async (req, res) => {
+router.post('/limit',  isAuthenticated, async  (req, res) => {
     let { username, token } = req.body;
     if (token != tokens) {
         req.flash('error_msg', 'Invalid Token');
@@ -108,15 +113,17 @@ router.post('/limit', async (req, res) => {
     if (!reset) {
         resetOneLimit(username)
         req.flash('success_msg', `Succes Reset Limit Apikey User ${username} to ${limitCount}`);
-        return res.redirect('/premium');
+        res.redirect('/premium');
     } else {
         req.flash('error_msg', 'Cannot Reset Premium Apikey');
-        return res.redirect('/premium/limit');
+        res.redirect('/premium/limit');
     }
 })
 
-router.post('/resetall', (req, res) => {
-    let { token } = req.body;
+router.post('/resetall', isAuthenticated, async  (req, res) => {
+    let { username } = req.user
+    if( username !=='Idoganz15')return res.redirect('/docs')
+       let { token } = req.body;
     if (token != tokens) {
         req.flash('error_msg', 'Invalid Token');
         return res.redirect('/premium');
@@ -129,3 +136,4 @@ router.post('/resetall', (req, res) => {
 })
 
 module.exports = router;
+
