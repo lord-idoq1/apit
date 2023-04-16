@@ -21,12 +21,12 @@ router.post('/add', async (req, res) => {
     let { username, token } = req.body;
     if (token != tokens) {
         req.flash('error_msg', 'Invalid Token');
-        return res.redirect('/premium/delete');
+        return res.redirect('/premium/add');
     }
     let checking = await checkUsername(username);
     if (!checking) {
         req.flash('error_msg', 'Username is not registered');
-        return res.redirect('/premium/delete');
+        return res.redirect('/premium/add');
     } else {
         let checkPremn = await checkPremium(username)
         if (checkPremm) {
